@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}نتایج جستجو{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="h4 mb-4">نتایج جستجو برای: <span class="text-primary">{{ q }}</span></h1>
+
+    <!-- فرم جستجو مجدد -->
+    <form action="{% url 'blog:search' %}" method="get" class="row g-2 mb-4">
+        <div class="col-md-6">
+            <input type="search" name="q" class="form-control" placeholder="جستجو..." value="{{ q }}">
+        </div>
+        <div class="col-md-4">
+            <select name="scope" class="form-select">
+                <option value="all" {% if request.GET.scope == 'all' %}selected{% endif %}>همهٔ دسته‌ها</option>
+                {% for cat in categories %}
+                <option value="{{ cat.slug }}" {% if request.GET.scope == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">جستجو</button>
+        </div>
+    </form>
+
+    {% if posts or albums %}
+    <div class="row">
+        {% for post in posts %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if post.cover %}
+                <img src="{{ post.cover }}" class="card-img-top" alt="{{ post.title }}" loading="lazy" style="height:200px; object-fit:cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="card-text small text-muted">{{ post.short_description|truncatewords:20 }}</p>
+                    <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-outline-primary">ادامه مطلب</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% for album in albums %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if album.cover_image %}
+                <img src="{{ album.cover_image }}" class="card-img-top" alt="{{ album.title }}" loading="lazy" style="height:200px; object-fit:cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ album.title }}</h5>
+                    <p class="card-text small text-muted">{{ album.order_instructions|truncatewords:20 }}</p>
+                    <button type="button" class="btn btn-sm btn-outline-primary album-open-btn" data-album-id="{{ album.id }}">
+                        نمایش آلبوم
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center">
+        هیچ نتیجه‌ای برای "<strong>{{ q }}</strong>" یافت نشد.
+    </div>
+    {% endif %}
+</div>
+
+<!-- بنر تبلیغاتی -->
+{% if ads_by_group.main %}
+<div class="main-banner-ads my-4 text-center">
+    {% for ad in ads_by_group.main %}
+    {% if ad.image %}
+    <a href="{{ ad.link_url|default:'#' }}" target="_blank" rel="noopener">
+        <img src="{{ ad.image.url }}" alt="{{ ad.name }}"
+             style="width:80%; height:100px; object-fit:cover;" class="img-fluid rounded shadow-sm" loading="lazy">
+    </a>
+    {% elif ad.external_code %}
+    {{ ad.external_code|safe }}
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- مودال آلبوم -->
+<div class="modal fade" id="albumModal" tabindex="-1" aria-labelledby="albumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" dir="rtl">
+            <div class="modal-header">
+                <h5 class="modal-title" id="albumModalLabel">آلبوم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body">
+                <div id="albumCarouselWrapper">
+                    <div id="albumCarousel" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-inner" id="albumCarouselInner"></div>
+                        <button class="carousel-control-prev btn btn-dark opacity-100" type="button" data-bs-target="#albumCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">قبلی</span>
+                        </button>
+                        <button class="carousel-control-next btn btn-dark opacity-100" type="button" data-bs-target="#albumCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">بعدی</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <h6 id="albumModalTitle" class="mb-1"></h6>
+                    <p id="albumModalDesc" class="small text-muted"></p>
+                </div>
+
+                <div id="albumThumbnails" class="d-flex flex-wrap gap-2 justify-content-center mt-3"></div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="albumModalMore" class="btn btn-sm btn-outline-primary disabled" href="#" role="button">بیشتر در دسته</a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentContainer = document.querySelector('main'); // کانتینر اصلی محتوا
+        let currentCategory = null;
+
+        async function loadCategory(slug, page=1) {
+            try {
+                const encodedSlug = encodeURIComponent(slug);
+                const url = `/ajax/category/${encodedSlug}/?page=${page}`;
+                const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                // فقط محتوای HTML را جایگزین کن، بدون تغییر ساختار ستون‌ها
+                contentContainer.innerHTML = data.html;
+                currentCategory = slug; // ← به‌روزرسانی دسته فعلی
+                contentContainer.dataset.categorySlug = slug;
+            } catch(e) {
+                console.error('خطا در بارگذاری دسته:', e);
+            }
+        }
+
+        // کلیک روی لینک‌های دسته‌ها
+        document.querySelectorAll('.category-link').forEach(el => {
+            el.addEventListener('click', e => {
+                e.preventDefault();
+                const slug = el.dataset.slug;
+                if (!slug) return;
+                loadCategory(slug, 1);
+            });
+        });
+
+        // کلیک روی دکمه‌های pagination
+        document.body.addEventListener('click', e => {
+            const btn = e.target.closest('.category-page-btn');
+            if (!btn) return;
+            e.preventDefault();
+            const page = btn.dataset.page;
+            if (!currentCategory) return;
+            loadCategory(currentCategory, page);
+        });
+
+        // کلیک روی دکمه‌های "نمایش بیشتر" آلبوم‌ها
+        document.body.addEventListener('click', e => {
+            const btn = e.target.closest('.album-show-more-btn');
+            if (!btn) return;
+            e.preventDefault();
+            const slug = btn.dataset.slug;
+            const page = btn.dataset.page;
+            if (!slug) return;
+            loadCategory(slug, page);
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('albumModal');
+        const albumModal = modalEl ? new bootstrap.Modal(modalEl) : null;
+        const carouselInner = document.getElementById('albumCarouselInner');
+        const albumModalTitle = document.getElementById('albumModalTitle');
+        const albumModalDesc = document.getElementById('albumModalDesc');
+        const albumModalMore = document.getElementById('albumModalMore');
+        const thumbContainer = document.getElementById('albumThumbnails');
+
+        function getAjaxUrl(albumId) {
+            const templateVar = window.AJAX_ALBUM_URL_TEMPLATE || null;
+            return templateVar ? templateVar.replace('/0/', '/' + albumId + '/') : '/ajax/album-images/' + albumId + '/';
+        }
+
+        if (modalEl) {
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                carouselInner.innerHTML = '';
+                albumModalTitle.textContent = '';
+                albumModalDesc.textContent = '';
+                thumbContainer.innerHTML = '';
+            });
+        }
+
+        async function fetchAlbumImages(albumId) {
+            try {
+                const resp = await fetch(getAjaxUrl(albumId), { credentials: 'same-origin' });
+                if (!resp.ok) return null;
+                return await resp.json();
+            } catch (e) {
+                console.error('AJAX fetch error', e);
+                return null;
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[m]);
+        }
+
+        function populateCarousel(data) {
+            carouselInner.innerHTML = '';
+            thumbContainer.innerHTML = '';
+            albumModalTitle.textContent = data.title || '';
+
+            if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+                albumModalDesc.innerHTML = DOMPurify.sanitize(data.description || '', {
+                    ALLOWED_TAGS: ['b','i','u','strong','em','p','br','ul','ol','li','a','img','div','span','h1','h2','h3','h4','h5'],
+                    ALLOWED_ATTR: ['href','alt','title','target','src','class','style']
+                }) || '<div class="text-muted">بدون توضیح</div>';
+            } else {
+                albumModalDesc.textContent = data.description || 'بدون توضیح';
+            }
+
+            const images = Array.isArray(data.images) ? data.images : [];
+            if (!images.length) {
+                carouselInner.innerHTML = '<div class="carousel-item active"><div class="text-center py-5 text-muted">تصویری یافت نشد.</div></div>';
+                return;
+            }
+
+            images.forEach((img, idx) => {
+                const safeUrl = escapeHtml(img.url || '');
+                const safeCap = escapeHtml(img.caption || '');
+
+                const div = document.createElement('div');
+                div.className = 'carousel-item' + (idx === 0 ? ' active' : '');
+                div.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center" style="height:70vh;">
+                    <img src="${safeUrl}" alt="${safeCap}" style="max-height:100%; max-width:100%; object-fit:contain;">
+                </div>
+                ${safeCap ? `<div class="carousel-caption d-none d-md-block text-start"><p>${safeCap}</p></div>` : ''}
+            `;
+                carouselInner.appendChild(div);
+
+                const thumb = document.createElement('img');
+                thumb.src = safeUrl;
+                thumb.alt = safeCap;
+                thumb.className = 'img-thumbnail';
+                thumb.style = 'width:80px; height:60px; object-fit:cover; cursor:pointer;';
+                thumb.addEventListener('click', () => {
+                    const bsCar = bootstrap.Carousel.getInstance(modalEl.querySelector('#albumCarousel'));
+                    if (bsCar) bsCar.to(idx);
+                });
+                thumbContainer.appendChild(thumb);
+            });
+
+            const carEl = modalEl.querySelector('#albumCarousel');
+            let bsCar = bootstrap.Carousel.getInstance(carEl);
+            if (bsCar) {
+                bsCar.to(0);
+            } else {
+                bsCar = new bootstrap.Carousel(carEl, { interval: false, ride: false, wrap: true });
+            }
+        }
+
+        document.body.addEventListener('click', async function (e) {
+            const trigger = e.target.closest('[data-album-id]');
+            if (!trigger) return;
+            e.preventDefault();
+            const albumId = trigger.getAttribute('data-album-id');
+            if (!albumId) return;
+
+            carouselInner.innerHTML = '<div class="carousel-item active"><div class="text-center py-5 text-muted">در حال بارگذاری...</div></div>';
+            albumModalTitle.textContent = '';
+            albumModalDesc.textContent = '';
+            thumbContainer.innerHTML = '';
+
+            const data = await fetchAlbumImages(albumId);
+            if (!data) {
+                carouselInner.innerHTML = '<div class="carousel-item active"><div class="text-center py-5 text-danger">خطا در بارگذاری آلبوم</div></div>';
+                albumModal?.show();
+                return;
+            }
+
+            populateCarousel(data);
+
+            if (data.category_slug) {
+                albumModalMore.href = '/category/' + encodeURIComponent(data.category_slug) + '/';
+                albumModalMore.classList.remove('disabled');
+            } else {
+                albumModalMore.href = '#';
+                albumModalMore.classList.add('disabled');
+            }
+
+            albumModal?.show();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{# blog/templates/blog/partials/album_modal.html #}
+<div class="modal fade" id="albumModal" tabindex="-1" aria-labelledby="albumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" dir="rtl">
+            <div class="modal-header">
+                <h5 class="modal-title" id="albumModalLabel">آلبوم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body">
+                <!-- carousel -->
+                <div id="albumCarousel" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner" id="albumCarouselInner"></div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#albumCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">قبلی</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#albumCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">بعدی</span>
+                    </button>
+                </div>
+
+                <!-- description under carousel -->
+                <div class="mt-3">
+                    <h6 id="albumModalTitle" class="mb-1"></h6>
+                    <div id="albumModalDesc" class="small text-muted"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="albumModalMore" class="btn btn-sm btn-outline-primary" href="#" target="_self">بیشتر در دسته</a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>

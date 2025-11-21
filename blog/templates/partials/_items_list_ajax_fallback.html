@@ -1,0 +1,23 @@
+{# partials/_items_list_ajax_fallback.html
+شبیه partials/_items_list.html اما حذف برخی تگ‌ها برای AJAX
+#}
+{% for item in items %}
+<article class="col-12 col-md-6 col-lg-4 mb-3" aria-label="{{ item.title }}">
+    <div class="card h-100 position-relative">
+        <a href="{{ item.get_absolute_url }}" class="stretched-link" aria-label="{{ item.title }}"></a>
+        {% if item.image_url %}
+        <div class="ratio ratio-16x9">
+            <img src="{{ item.image_url }}" class="card-img-top item-thumb thumbnail-medium" alt="{{ item.title }}" loading="lazy">
+        </div>
+        {% endif %}
+        <div class="card-body text-end">
+            <h2 class="h6 mb-1">{{ item.title }}</h2>
+            <p class="small text-muted mb-2">{{ item.short_description }}</p>
+            <div class="d-flex justify-content-between">
+                <div class="small text-muted">{{ item.created_at|date:"Y/m/d" }}</div>
+                <a href="{{ item.get_absolute_url }}" class="btn btn-sm btn-outline-primary">مشاهده</a>
+            </div>
+        </div>
+    </div>
+</article>
+{% endfor %}

@@ -1,0 +1,43 @@
+{# blog/templates/partials/_items_list.html
+نسخهٔ اصلاح‌شده
+- هر article و .card دارای position-relative است (برای confinement)
+- از item.get_absolute_url برای لینک‌ها استفاده می‌شود
+- تگ‌های img کلاس‌های thumbnail کمکی دارند
+- راست‌چینی و دسترس‌پذیری رعایت شده
+#}
+
+{% comment %} items: لیست آیتم‌ها که هر آیتم باید فیلدهای: title, short_description, image_url, get_absolute_url, categories (Queryset) داشته باشد {% endcomment %}
+{% for item in items %}
+<article class="col-12 col-md-6 col-lg-4 mb-3" data-category-slugs="{% for c in item.categories.all %}{{ c.slug }}{% if not forloop.last %},{% endif %}{% endfor %}" aria-label="{{ item.title }}">
+    <div class="card h-100 position-relative"> {# position-relative برای confinement overlay/stretched-link #}
+        {# لینکِ کششی محدود به کارت - والد position-relative است پس فقط داخل کارت کلیک‌پذیر می‌شود #}
+        <a href="{{ item.get_absolute_url }}" class="stretched-link" aria-label="{{ item.title }}"></a>
+
+        {% if item.image_url %}
+        <div class="ratio ratio-16x9">
+            <img src="{{ item.image_url }}" class="card-img-top item-thumb thumbnail-medium" alt="{{ item.title }}" loading="lazy" width="250" height="150">
+        </div>
+        {% endif %}
+
+        <div class="card-body text-end"> {# text-end برای راست‌چینِ محتوای کارت #}
+            <h2 class="h6 card-title mb-1" role="heading" aria-level="3">{{ item.title }}</h2>
+            <p class="card-text small text-muted mb-2">{{ item.short_description }}</p>
+
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="small text-muted">
+                    {% if item.created_at %}
+                    {{ item.created_at|date:"Y/m/d" }}
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{{ item.get_absolute_url }}" class="btn btn-sm btn-outline-primary" aria-label="نمایش {{ item.title }}">مشاهده</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+{% empty %}
+<div class="col-12">
+    <p class="text-muted">موردی برای نمایش وجود ندارد.</p>
+</div>
+{% endfor %}

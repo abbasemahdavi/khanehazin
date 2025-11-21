@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ category.name }} — دسته‌بندی{% endblock %}
+
+{% block content %}
+<div id="category-content" data-category-slug="{{ category.slug|default:category_slug|default:'' }}">
+    {% include "partials/category_content.html" %}
+    {% include "partials/album_modal.html" %}
+
+
+</div>
+<div class="modal fade" id="albumModal" tabindex="-1" aria-labelledby="albumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" dir="rtl">
+            <div class="modal-header">
+                <h5 class="modal-title" id="albumModalLabel">آلبوم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body">
+                <div id="albumCarouselWrapper">
+                    <div id="albumCarousel" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-inner" id="albumCarouselInner"></div>
+                        <button class="carousel-control-prev btn btn-dark opacity-100" type="button" data-bs-target="#albumCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">قبلی</span>
+                        </button>
+                        <button class="carousel-control-next btn btn-dark opacity-100" type="button" data-bs-target="#albumCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">بعدی</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <h6 id="albumModalTitle" class="mb-1"></h6>
+                    <p id="albumModalDesc" class="small text-muted"></p>
+                </div>
+
+                <div id="albumThumbnails" class="d-flex flex-wrap gap-2 justify-content-center mt-3"></div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="albumModalMore" class="btn btn-sm btn-outline-primary disabled" href="#" role="button">بیشتر در دسته</a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentContainer = document.getElementById('category-content') || document.querySelector('main');
+
+        // مسیر AJAX: /ajax/category/<slug>/?page=<n>
+        async function loadCategoryAjax(slug, page = 1) {
+            if (!slug) return;
+            const url = `/ajax/category/${encodeURIComponent(slug)}/?page=${encodeURIComponent(page)}`;
+            try {
+                const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+                if (!resp.ok) {
+                    console.error('AJAX failed', resp.status);
+                    return false;
+                }
+                const data = await resp.json();
+                if (data && data.html !== undefined && contentContainer) {
+                    contentContainer.innerHTML = data.html;
+                    // مطمئن شو attribute داده شده بروز می‌شود
+                    contentContainer.dataset.categorySlug = slug;
+                }
+                return true;
+            } catch (err) {
+                console.error('AJAX exception', err);
+                return false;
+            }
+        }
+
+        // helper: extract slug from href like /category/<slug>/...
+        function slugFromHref(href) {
+            if (!href) return '';
+            try {
+                const url = new URL(href, window.location.origin);
+                const parts = url.pathname.split('/').filter(Boolean);
+                const idx = parts.indexOf('category');
+                if (idx !== -1 && parts.length > idx + 1) return decodeURIComponent(parts[idx + 1]);
+                // fallback: آخرین قسمت اگر numeric نیست
+                const last = parts[parts.length - 1];
+                return last || '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // single delegated listener for category links و چک‌باکس‌ها
+        document.body.addEventListener('click', function(e) {
+            // category links (if you use .category-link)
+            const categoryLink = e.target.closest('.category-link');
+            // checkboxes (optional)
+            const catCheckbox = e.target.closest('.category-checkbox');
+
+            if (categoryLink) {
+                e.preventDefault();
+                let slug = categoryLink.dataset.slug || slugFromHref(categoryLink.getAttribute('href') || '');
+                if (!slug) return;
+                loadCategoryAjax(slug, 1);
+                return;
+            }
+
+            if (catCheckbox) {
+                e.preventDefault();
+                const slug = catCheckbox.value || catCheckbox.dataset.slug;
+                if (!slug) return;
+                loadCategoryAjax(slug, 1);
+                return;
+            }
+        });
+    });
+</script>
+
+<script src="{% static 'js/album-modal.js' %}?v=2"></script>
+{% endblock %}

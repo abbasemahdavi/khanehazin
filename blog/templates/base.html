@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}خانه‌آذین{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/Logo.png' %}">
+    {% block extra_head %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.rtl.css' %}">
+    <link rel="stylesheet" href="{% static 'css/css.css' %}">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <link rel="stylesheet" href="{% static 'css/blog.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+
+</head>
+<body>
+<div class="container">
+
+    <!-- هدر -->
+    <header class="header-box border-bottom py-2 position-relative">
+        <div class="d-flex align-items-center justify-content-between">
+            <!-- لوگو سمت راست -->
+            <div class="me-3">
+                <a href="/" class="d-inline-flex align-items-center">
+                    <img src="{% static 'images/logo.png' %}" alt="لوگو خانه‌آذین" width="120" loading="lazy">
+                </a>
+            </div>
+
+            <!-- بنر تبلیغاتی وسط -->
+            {% if ads_by_group.header %}
+            <div class="flex-grow-1 text-center">
+                {% for ad in ads_by_group.header %}
+                {% if ad.external_code %}
+                {{ ad.external_code|safe }}
+                {% elif ad.image %}
+                <a href="{{ ad.link_url|default:'#' }}" target="_blank" rel="noopener">
+                    <img src="{{ ad.image.url }}" alt="{{ ad.name }}"
+                         style="width:80%; height:100px; object-fit:cover;"
+                         class="rounded shadow-sm" loading="lazy">
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- دکمه‌های ورود و ثبت‌نام سمت چپ پایین -->
+            <!--<div class="d-none d-md-flex gap-2 ms-3 align-self-end">
+                <button type="button" class="btn btn-outline-primary">ورود</button>
+                <button type="button" class="btn btn-primary">ثبت نام</button>
+            </div>-->
+        </div>
+
+        <!-- ساعت و تاریخ بالا-چپ -->
+        <div id="jalali-clock">
+            <span id="jalaliDate"></span>
+            <span id="jalaliClock"></span>
+        </div>
+
+    </header>
+    <!-- منو -->
+    <nav class="border-bottom py-2">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center justify-content-between flex-nowrap">
+
+                <!-- MOBILE: search (visible only on small screens) -->
+                <div class="d-flex d-md-none align-items-center w-100 position-relative">
+                    <!-- دکمهٔ همبرگری سمت راست -->
+                    <button id="nav-toggler" class="btn btn-outline-secondary" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#navCollapse"
+                            aria-controls="navCollapse" aria-expanded="false" aria-label="منوی سایت">
+                        &#9776;
+                    </button>
+
+                    <!-- فرم جستجو سمت چپ -->
+                    <form id="mobile-search-form" action="{% url 'blog:search' %}" method="get"
+                          class="d-flex align-items-center ms-auto"
+                          role="search"
+                          style="gap:8px; min-width:0;">
+                        <input type="hidden" name="scope" value="all">
+                        <input name="q" class="form-control form-control-sm" type="search"
+                               placeholder="جستجو..." aria-label="جستجو"
+                               value="{{ request.GET.q|default:'' }}"
+                               style="width:140px; max-width:50vw;">
+                        <button class="btn btn-sm btn-outline-success" type="submit" aria-label="ارسال جستجو">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+
+                    <!-- منوی همبرگری (collapse) زیر دکمه -->
+                    <div class="collapse position-absolute top-100 start-0 w-100 mt-1" id="navCollapse">
+                        <div class="bg-white p-2 rounded shadow-sm">
+                            <ul class="nav mb-0">
+                                <!-- لینک خانه همیشه وجود دارد -->
+                                <li class="nav-item">
+                                    <a href="/" class="nav-link px-2" title="خانه" aria-label="خانه">
+                                        <i class="bi bi-house-door-fill"></i> خانه
+                                    </a>
+                                </li>
+
+                                {% if main_menu and main_menu.items.exists %}
+                                {% for item in main_menu.items.all %}
+                                {% if item.show %}
+                                <li class="nav-item position-relative">
+                                    <a class="nav-link px-2" href="{{ item.get_url|default:'#' }}">
+                                        {% if item.icon %}
+                                        <i class="{{ item.icon }}"></i>
+                                        {% endif %}
+                                        {{ item.title }}
+                                    </a>
+                                    {% if item.children.exists %}
+                                    <ul class="dropdown-menu position-absolute mt-0">
+                                        {% for child in item.children.all %}
+                                        {% if child.show %}
+                                        <li>
+                                            <a class="dropdown-item" href="{{ child.get_url|default:'#' }}">
+                                                {% if child.icon %}
+                                                <i class="{{ child.icon }}"></i>
+                                                {% endif %}
+                                                {{ child.title }}
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DESKTOP MENU (بدون تغییر) -->
+                <div class="d-none d-md-block">
+                    <ul class="nav mb-0">
+                        <!-- لینک خانه همیشه وجود دارد -->
+                        <li class="nav-item">
+                            <a href="/" class="nav-link px-2" title="خانه" aria-label="خانه">
+                                <i class="bi bi-house-door-fill"></i>
+                            </a>
+                        </li>
+
+                        {% if main_menu and main_menu.items.exists %}
+                        {% for item in main_menu.items.all %}
+                        {% if item.show %}
+                        <li class="nav-item position-relative">
+                            <a class="nav-link px-2" href="{{ item.get_url|default:'#' }}">
+                                {% if item.icon %}
+                                <i class="{{ item.icon }}"></i>
+                                {% endif %}
+                                {{ item.title }}
+                            </a>
+                            {% if item.children.exists %}
+                            <ul class="dropdown-menu position-absolute mt-0">
+                                {% for child in item.children.all %}
+                                {% if child.show %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ child.get_url|default:'#' }}">
+                                        {% if child.icon %}
+                                        <i class="{{ child.icon }}"></i>
+                                        {% endif %}
+                                        {{ child.title }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- DESKTOP SEARCH (بدون تغییر) -->
+                <div class="d-none d-md-flex gap-2">
+                    <form id="search-form" action="{% url 'blog:search' %}" method="get"
+                          class="d-none d-md-flex align-items-center ms-auto"
+                          role="search">
+                        <input name="q" class="form-control me-2" type="search" placeholder="جستجو..." aria-label="جستجو"
+                               value="{{ request.GET.q|default:'' }}">
+                        <select name="scope" class="form-select me-2" style="width:auto;">
+                            <option value="all">همهٔ سایت</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.slug }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-outline-success" type="submit">جستجو</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+
+
+    <!-- محتوای اصلی: سه‌ستونه -->
+    <main class="row my-4">
+        <!-- ستون راست -->
+        <aside class="col-md-2 d-none d-md-block border-start">
+            <div class="mb-4">
+                <h5 class="border-bottom pb-2">دسته‌بندی‌ها</h5>
+                <ul class="list-unstyled small">
+                    {% for cat in categories %}
+                    <li><a href="{% url 'blog:category_albums' cat.slug %}" class="text-decoration-none">{{ cat.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="mb-4">
+                <h5 class="border-bottom pb-2">تازه‌ها</h5>
+                <ul class="list-unstyled small">
+                    {% for item in combined_items %}
+                    {% if item.kind == 'post' %}
+                    <li>
+                        <a href="{{ item.url }}" class="text-decoration-none">{{ item.title }}</a>
+                    </li>
+                    {% endif %}
+                    {% empty %}
+                    <li>هیچ پستی ثبت نشده است.</li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </aside>
+
+        <!-- محتوای اصلی -->
+        <section class="col-md-8">
+            {% block content %}
+            <div class="p-3 border rounded bg-white text-center text-muted">
+                <p>در این بخش محتوای اصلی سایت قرار می‌گیرد.</p>
+            </div>
+            {% endblock %}
+        </section>
+
+        <!-- ستون چپ: آگهی‌ها -->
+        <aside class="col-md-2">
+            <div class="ads-panel mt-4">
+                <h6 class="mb-2">آگهی‌ها</h6>
+                <div id="ads-list" class="d-grid gap-2">
+                    {% comment %} اگر در context تبلیغات داری آنها را اینجا render کن؛ در غیر اینصورت placeholder. {% endcomment %}
+                    {% if ads_by_group.sidebar %}
+                    {% for ad in ads_by_group.sidebar|slice:":10" %}
+                    <div class="ad-item small">
+                        {% if ad.external_code %}
+                        {{ ad.external_code|safe }}
+                        {% elif ad.image %}
+                        <a href="{{ ad.link_url|default:'#' }}" target="_blank" rel="noopener">
+                            <img src="{{ ad.image.url }}" class="img-fluid rounded" alt="{{ ad.name }}" loading="lazy">
+                        </a>
+                        <div class="small mt-2 text-secondary">{{ ad.name }}</div>
+                        {% else %}
+                        {{ ad.name }}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-muted small text-center">هیچ آگهی‌ای ثبت نشده است.</div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- footer -->
+    <footer class="site-footer border-top py-4 mt-5">
+        <div class="container">
+            <div class="row gy-4">
+                <!-- درباره سایت -->
+                <div class="col-12 col-md-4 text-center text-md-start">
+                    <h5 class="mb-2">{{ site_settings.site_name }}</h5>
+                    <p class="small text-muted mb-1">
+                        {{ site_settings.about_text }}
+                    </p>
+                </div>
+                <!-- لینک‌های سریع -->
+                <div class="col-12 col-md-4 text-center">
+                    <h5 class="mb-2">لینک‌های سریع</h5>
+                    <ul class="list-unstyled small mb-0">
+                        {% for link in footer_links %}
+                        {% if link.show %}
+                        <li>
+                            <a href="{{ link.url }}" class="text-body-secondary text-decoration-none">
+                                {{ link.title }}
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- آیکون‌ها -->
+                <div class="col-12 col-md-4 text-center text-md-end">
+                    <h5 class="mb-2">نمادها</h5>
+                    <div class="d-flex justify-content-center justify-content-md-end gap-2 align-items-center">
+                        {% for ico in footer_icons %}
+                        {% if ico.show %}
+                        <a href="{{ ico.url|default:'#' }}" target="_blank" rel="noopener">
+                            {% if ico.html %}
+                            {{ ico.html|safe }}
+                            {% elif ico.icon_class %}
+                            <i class="{{ ico.icon_class }}"></i>
+                            {% elif ico.image %}
+                            <img src="{{ ico.image.url }}" alt="{{ ico.title }}" style="height:40px;">
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- کپی‌رایت و طراح -->
+                <div class="col-12 text-center mt-3">
+                    <p class="small text-muted mb-0">
+                        {{ site_settings.copyright_text }} |
+                        طراحی و توسعه توسط
+                        <strong>
+                            عباس مهدوی
+                        </strong>
+                        <a href="https://t.me/AbbaseMahdavi" target="_blank" rel="noopener" title="تلگرام عباس مهدوی">
+                            <img src="https://pngimg.com/uploads/telegram/telegram_PNG20.png" alt="تلگرام" width="20" height="20" style="vertical-align: middle;">
+                        </a>
+                        <a href="https://eitaa.com/Abbasemahdavi" target="_blank" rel="noopener" title="ایتا عباس مهدوی" style="margin-left: 6px;">
+                            <img src="https://amooddecor.com/wp-content/uploads/2023/01/Eitaa-Logo2-LimooGraphic.webp" alt="ایتا" width="20" height="20" style="vertical-align: middle;">
+                        </a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+
+</div>
+
+<!-- اسکریپت‌ها -->
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}?v=5"></script>
+<script src="{% static 'js/album-modal.js' %}?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function updateClock() {
+            // تاریخ شمسی
+            const pNow = new persianDate();
+            const dateStr = pNow.format('dddd DD MMMM YYYY'); // مثال: جمعه 23 آبان 1404
+
+            // ساعت (می‌توان از persianDate هم گرفت، ولی استاندارد با Date)
+            const d = new Date();
+            const timeStr = d.toLocaleTimeString('fa-IR', { hour12: false }); // ارقام فارسی
+
+            const dateEl = document.getElementById('jalaliDate');
+            const timeEl = document.getElementById('jalaliClock');
+
+            if (dateEl) dateEl.textContent = dateStr;
+            if (timeEl) timeEl.textContent = timeStr;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentContainer = document.querySelector('main'); // کانتینر اصلی محتوا
+        let currentCategory = null;
+
+        async function loadCategory(slug, page=1) {
+            try {
+                const encodedSlug = encodeURIComponent(slug);
+                const url = `/ajax/category/${encodedSlug}/?page=${page}`;
+                const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                // فقط محتوای HTML را جایگزین کن، بدون تغییر ساختار ستون‌ها
+                contentContainer.innerHTML = data.html;
+                currentCategory = slug; // ← به‌روزرسانی دسته فعلی
+                contentContainer.dataset.categorySlug = slug;
+            } catch(e) {
+                console.error('خطا در بارگذاری دسته:', e);
+            }
+        }
+
+        // کلیک روی لینک‌های دسته‌ها
+        document.querySelectorAll('.category-link').forEach(el => {
+            el.addEventListener('click', e => {
+                e.preventDefault();
+                const slug = el.dataset.slug;
+                if (!slug) return;
+                loadCategory(slug, 1);
+            });
+        });
+
+        // کلیک روی دکمه‌های pagination
+        document.body.addEventListener('click', e => {
+            const btn = e.target.closest('.category-page-btn');
+            if (!btn) return;
+            e.preventDefault();
+            const page = btn.dataset.page;
+            if (!currentCategory) return;
+            loadCategory(currentCategory, page);
+        });
+
+        // کلیک روی دکمه‌های "نمایش بیشتر" آلبوم‌ها
+        document.body.addEventListener('click', e => {
+            const btn = e.target.closest('.album-show-more-btn');
+            if (!btn) return;
+            e.preventDefault();
+            const slug = btn.dataset.slug;
+            const page = btn.dataset.page;
+            if (!slug) return;
+            loadCategory(slug, page);
+        });
+    });
+</script>
+<script src="{% static 'js/album-modal.js' %}?v=2"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

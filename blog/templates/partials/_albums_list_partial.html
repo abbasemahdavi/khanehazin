@@ -1,0 +1,30 @@
+<div class="row">
+    {% for album in albums %}
+    <div class="col-md-4 mb-3">
+        <div class="card album-card position-relative" style="direction:rtl;">
+            <div style="height:160px;overflow:hidden;">
+                {% if album.cover_url %}
+                <img src="{{ album.cover_url }}" alt="{{ album.title }}" class="card-img-top album-cover">
+                {% else %}
+                <img src="{% static 'images/placeholder-400x300.png' %}" alt="{{ album.title }}" class="card-img-top album-cover">
+                {% endif %}
+            </div>
+            <div class="card-body p-2">
+                <h3 class="h6 mb-1">{{ album.title }}</h3>
+                <p class="small text-muted mb-1">{{ album.short_description }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="small text-muted">کد: {{ album.code }}</div>
+                    <div>
+                        {% if album.first_category_slug %}
+                        <a href="{% url 'blog:category_albums' album.first_category_slug %}" class="btn btn-sm btn-outline-secondary more-for-tab" data-tab-slug="{{ album.first_category_slug }}">بیشتر</a>
+                        {% else %}
+                        <a class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">بدون دسته</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <button class="stretched-link album-open" data-album-id="{{ album.id }}" style="position:absolute;inset:0;background:none;border:0;"></button>
+        </div>
+    </div>
+    {% endfor %}
+</div>

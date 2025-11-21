@@ -1,0 +1,487 @@
+{# blog/templates/blog/post_list.html #}
+{% extends "base.html" %}
+{% load static %}
+{% block title %}خانه‌آذین — صفحهٔ اصلی{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}?v=3">
+<meta name="description" content="آخرین پست‌ها در خانه‌آذین — جدیدترین پست‌ها و دسته‌بندی‌ها">
+<style>
+    /* اصلاحات RTL و نمایش */
+    .featured-post .card-img-top { max-height: 260px; object-fit: cover; }
+    .albums-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 1rem; }
+    .album-card .card { height: 100%; }
+    .category-panel { min-width: 220px; }
+    .list-posts li { position: relative; }
+    .title-link { display:block; position:absolute; inset:0; z-index:2; }
+    .albums-tab-more { text-align: left; } /* پایین-چپ محلی */
+    .modal .carousel-item img { max-height: 560px; object-fit: contain; }
+    .badge-count { font-size:0.75rem; }
+</style>
+{% endblock %}
+
+{% block right_sidebar %}
+<div class="category-panel p-3">
+    <h5 class="mb-2">فهرست دسته‌بندی‌ها</h5>
+    <form id="categories-form" class="small" aria-label="فهرست دسته بندی‌ها" onsubmit="return false;">
+        <div id="categories-list" class="d-grid gap-2">
+            {% if categories %}
+            {# پیش‌فرض: همه تیک‌خورده باشد #}
+            {% for cat in categories %}
+            <div class="form-check form-check-reverse">
+                <input class="form-check-input category-checkbox" type="checkbox"
+                       value="{{ cat.slug }}" id="cat-{{ cat.id }}" checked>
+                <label class="form-check-label" for="cat-{{ cat.id }}">
+                    {{ cat.name }} <span class="badge bg-secondary ms-2 badge-count">{{ cat.count }}</span>
+                </label>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-muted small">هیچ دسته‌بندی‌ای یافت نشد.</div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block content %}
+<main aria-labelledby="page-title">
+    <h1 id="page-title" class="h4 mb-3">خواندنی‌ها</h1>
+
+    <div class="row g-3">
+
+        <!-- پست‌ها -->
+        <div class="col-12">
+            <div class="row g-3 align-items-start flex-lg-row-reverse">
+
+                <div class="col-12 col-lg-5 order-1 order-lg-2">
+                    {% if featured_post %}
+                    <article class="card featured-post h-100 position-relative text-end">
+                        {% if featured_post.image_url %}
+                        <img src="{{ featured_post.image_url }}" class="card-img-top" alt="{{ featured_post.title }}" loading="lazy">
+                        {% else %}
+                        <img src="{% static 'images/placeholder-800x450.png' %}" class="card-img-top" alt="{{ featured_post.title }}" loading="lazy">
+                        {% endif %}
+                        <div class="card-body">
+                            <h2 class="h5 card-title mb-2">
+                                <a href="{{ featured_post.get_absolute_url }}" class="text-decoration-none">{{ featured_post.title }}</a>
+                            </h2>
+                            <p class="card-text small text-muted mb-2">{{ featured_post.created_at|date:"Y/m/d H:i" }}</p>
+
+                            <p class="card-text">
+                                {{ featured_post.summary|default:featured_post.content|striptags|truncatechars:200 }}
+                            </p>
+
+                            <a href="{{ featured_post.get_absolute_url }}" class="btn btn-sm btn-primary mt-2">ادامه مطلب</a>
+                        </div>
+                    </article>
+                    {% else %}
+                    <div class="text-muted">پستی برای نمایش ویژه وجود ندارد.</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-12 col-lg-7 order-2 order-lg-1">
+                    <div class="list-posts">
+                        {% if other_posts %}
+                        <ul class="list-unstyled mb-0">
+                            {% for p in other_posts %}
+                            <li class="d-flex align-items-start py-2 border-bottom" style="min-height:56px;">
+                                <div class="flex-grow-1 text-end pe-3">
+                                    {# data-category-slugs: ترکیب slugهای دسته‌های پست برای فیلتر فرانت‌اند #}
+                                    <a href="{{ p.get_absolute_url }}" class="stretched-link title-link" aria-label="{{ p.title }}"></a>
+                                    <h3 class="h6 mb-0 post-title">{{ p.title }}</h3>
+                                    <div class="small text-muted mt-1">{{ p.created_at|date:"Y/m/d H:i" }}</div>
+                                    <div class="d-none post-category-slugs">
+                                        {% for c in p.categories.all %}
+                                        {{ c.slug }}{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">پستی برای نمایش وجود ندارد.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- بنر تبلیغاتی -->
+        {% if ads_by_group.main %}
+        <div class="main-banner-ads my-4 text-center">
+            {% for ad in ads_by_group.main %}
+            {% if ad.image %}
+            <a href="{{ ad.link_url|default:'#' }}" target="_blank" rel="noopener">
+                <img src="{{ ad.image.url }}" alt="{{ ad.name }}"
+                     style="width:80%; height:100px; object-fit:cover;" class="img-fluid rounded shadow-sm" loading="lazy">
+            </a>
+            {% elif ad.external_code %}
+            {{ ad.external_code|safe }}
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <script>
+            // مسیر پایه برای فراخوانی تصاویر آلبوم با AJAX
+            window.AJAX_ALBUM_IMAGES_URL_TEMPLATE = "{% url 'blog:ajax_album_images' 0 %}".replace("0", "{album_id}");
+        </script>
+
+        <!-- تب‌های آلبوم (نمای ترکیبی) -->
+        {% if album_tabs %}
+        <div class="col-12">
+            <section id="albums-tabs-section" class="my-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">آلبوم محصولات</h2>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button id="tabs-prev" class="btn btn-sm btn-outline-secondary" aria-label="قبلی" type="button">‹</button>
+                        <button id="tabs-playpause" class="btn btn-sm btn-outline-primary" aria-label="توقف/ادامه" type="button">توقف</button>
+                        <button id="tabs-next" class="btn btn-sm btn-outline-secondary" aria-label="بعدی" type="button">›</button>
+                    </div>
+                </div>
+
+                <ul id="albums-tabs-nav" class="nav nav-tabs" role="tablist">
+                    {% for tab in album_tabs %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if forloop.first %}active{% endif %}" id="tab-btn-{{ forloop.counter0 }}"
+                                data-index="{{ forloop.counter0 }}" type="button" role="tab"
+                                aria-controls="tab-panel-{{ forloop.counter0 }}"
+                                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                                data-tab-slug="{{ tab.slug|default:'' }}">
+                            {{ tab.name }}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div id="albums-tabs-content" class="tab-content border p-3 rounded-bottom">
+                    {% for tab in album_tabs %}
+                    <div class="tab-pane {% if forloop.first %}active show{% endif %}" id="tab-panel-{{ forloop.counter0 }}"
+                         role="tabpanel" aria-labelledby="tab-btn-{{ forloop.counter0 }}" data-tab-index="{{ forloop.counter0 }}" data-tab-slug="{{ tab.slug|default:'' }}">
+                        <div class="albums-grid" aria-live="polite">
+                            {% if tab.albums %}
+                            {% for album in tab.albums %}
+                            {% if forloop.counter <= 10 %}
+                            <div class="album-card" data-album-id="{{ album.id }}" data-album-title="{{ album.title }}">
+                                <div class="card h-100 position-relative">
+                                    <div class="ratio ratio-16x9 position-relative">
+                                        {% if album.cover_url %}
+                                        <img src="{{ album.cover_url }}" alt="{{ album.title }}" class="card-img-top w-100 h-100" style="object-fit:cover;">
+                                        {% else %}
+                                        <img src="{% static 'images/placeholder-800x450.png' %}" alt="{{ album.title }}" class="card-img-top w-100 h-100" style="object-fit:cover;">
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body p-2 text-end">
+                                    <h3 class="h6 mb-1">{{ album.title }}</h3>
+                                    </div>
+                                    <div class="card-body p-2 text-end">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="small text-muted">کد: {{ album.code }}</div>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-secondary album-open-btn" data-album-id="{{ album.id }}" type="button">نمایش</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="stretched-link album-open" aria-label="باز کردن آلبوم {{ album.title }}" data-album-id="{{ album.id }}" style="position:absolute;inset:0;background:none;border:0;opacity:0;"></button>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-muted">آلبومی در این دسته وجود ندارد.</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="albums-tab-more mt-3">
+                            {% if tab.slug %}
+                            <a href="{% url 'blog:category_albums' tab.slug %}" class="btn btn-sm btn-outline-secondary">بیشتر</a>
+                            {% else %}
+                            <a href="#" class="btn btn-sm btn-outline-secondary disabled">بدون دسته</a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+        {% endif %}
+
+    </div>
+</main>
+
+<div class="modal fade" id="albumModal" tabindex="-1" aria-labelledby="albumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" dir="rtl">
+            <div class="modal-header">
+                <h5 class="modal-title" id="albumModalLabel">آلبوم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <div class="modal-body">
+                <div id="albumCarouselWrapper">
+                    <div id="albumCarousel" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-inner" id="albumCarouselInner"></div>
+                        <button class="carousel-control-prev btn btn-dark opacity-100" type="button" data-bs-target="#albumCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">قبلی</span>
+                        </button>
+                        <button class="carousel-control-next btn btn-dark opacity-100" type="button" data-bs-target="#albumCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">بعدی</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- توضیحات آلبوم -->
+                <div class="mt-3">
+                    <h6 id="albumModalTitle" class="mb-1"></h6>
+                    <p id="albumModalDesc" class="small text-muted"></p>
+                </div>
+
+                <!-- تصاویر بندانگشتی -->
+                <div id="albumThumbnails" class="d-flex flex-wrap gap-2 justify-content-center mt-3"></div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="albumModalMore" class="btn btn-sm btn-outline-primary disabled" href="#" role="button">بیشتر در دسته</a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const templateVar = window.AJAX_ALBUM_URL_TEMPLATE || null;
+
+        function getAjaxUrl(albumId) {
+            if (templateVar) return templateVar.replace('/0/', '/' + albumId + '/');
+            return '/ajax/album-images/' + albumId + '/';
+        }
+
+        const modalEl = document.getElementById('albumModal');
+        const albumModal = modalEl ? new bootstrap.Modal(modalEl) : null;
+        const carouselInner = document.getElementById('albumCarouselInner');
+        const albumModalTitle = document.getElementById('albumModalTitle');
+        const albumModalDesc = document.getElementById('albumModalDesc');
+        const albumModalMore = document.getElementById('albumModalMore');
+        const thumbContainer = document.getElementById('albumThumbnails');
+
+        if (modalEl) {
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                if (carouselInner) carouselInner.innerHTML = '';
+                if (albumModalTitle) albumModalTitle.textContent = '';
+                if (albumModalDesc) albumModalDesc.textContent = '';
+                if (thumbContainer) thumbContainer.innerHTML = '';
+            });
+        }
+
+        async function fetchAlbumImages(albumId) {
+            const url = getAjaxUrl(albumId);
+            try {
+                const resp = await fetch(url, { credentials: 'same-origin' });
+                if (!resp.ok) return null;
+                return await resp.json();
+            } catch (e) {
+                console.error('AJAX fetch error', e);
+                return null;
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s || '').replace(/[&<>"']/g, function (m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+            });
+        }
+
+        function populateCarousel(data) {
+            if (!carouselInner || !thumbContainer) return;
+            carouselInner.innerHTML = '';
+            thumbContainer.innerHTML = '';
+            if (albumModalTitle) albumModalTitle.textContent = data.title || '';
+            if (albumModalDesc) (function() {
+                const raw = data.description || '';
+                if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+                    const clean = DOMPurify.sanitize(raw, {
+                        ALLOWED_TAGS: ['b','i','u','strong','em','p','br','ul','ol','li','a','img','div','span','h1','h2','h3','h4','h5'],
+                        ALLOWED_ATTR: ['href','alt','title','target','src','class','style']
+                    });
+                    albumModalDesc.innerHTML = clean || '<div class="text-muted">بدون توضیح</div>';
+                } else {
+                    albumModalDesc.textContent = raw || 'بدون توضیح';
+                }
+            })();
+
+            const images = Array.isArray(data.images) ? data.images : [];
+            if (!images.length) {
+                carouselInner.innerHTML = '<div class="carousel-item active"><div class="text-center py-5 text-muted">تصویری یافت نشد.</div></div>';
+                return;
+            }
+
+            images.forEach((img, idx) => {
+                const div = document.createElement('div');
+                div.className = 'carousel-item' + (idx === 0 ? ' active' : '');
+                const safeUrl = escapeHtml(img.url || '');
+                const safeCap = escapeHtml(img.caption || '');
+                div.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center" style="height:70vh;">
+                  <img src="${safeUrl}" alt="${safeCap}" style="max-height:100%; max-width:100%; object-fit:contain;">
+                </div>
+                ${safeCap ? `<div class="carousel-caption d-none d-md-block text-start"><p>${safeCap}</p></div>` : ''}
+            `;
+                carouselInner.appendChild(div);
+
+                const thumb = document.createElement('img');
+                thumb.src = safeUrl;
+                thumb.alt = safeCap;
+                thumb.className = 'img-thumbnail';
+                thumb.style = 'width:80px; height:60px; object-fit:cover; cursor:pointer;';
+                thumb.addEventListener('click', () => {
+                    const carEl = modalEl.querySelector('#albumCarousel');
+                    const bsCar = bootstrap.Carousel.getInstance(carEl);
+                    if (bsCar) bsCar.to(idx);
+                });
+                thumbContainer.appendChild(thumb);
+            });
+
+            try {
+                const carEl = modalEl.querySelector('#albumCarousel');
+                let bsCar = bootstrap.Carousel.getInstance(carEl);
+                if (bsCar) {
+                    bsCar.to(0);
+                } else {
+                    bsCar = new bootstrap.Carousel(carEl, { interval: false, ride: false, wrap: true });
+                }
+            } catch (e) {
+                console.warn('carousel init error', e);
+            }
+        }
+
+        document.body.addEventListener('click', async function (e) {
+            const trigger = e.target.closest('[data-album-id]');
+            if (!trigger) return;
+            e.preventDefault();
+            const albumId = trigger.getAttribute('data-album-id');
+            if (!albumId) return;
+
+            if (carouselInner) carouselInner.innerHTML = '<div class="carousel-item active"><div class="text-center py-5 text-muted">در حال بارگذاری...</div></div>';
+            if (albumModalTitle) albumModalTitle.textContent = '';
+            if (albumModalDesc) albumModalDesc.textContent = '';
+            if (thumbContainer) thumbContainer.innerHTML = '';
+
+            const data = await fetchAlbumImages(albumId);
+            if (!data) {
+                if (carouselInner) carouselInner.innerHTML = '<div class="carousel-item active"><div class="text-center py-5 text-danger">خطا در بارگذاری آلبوم</div></div>';
+                if (albumModal) albumModal.show();
+                return;
+            }
+
+            populateCarousel(data);
+
+            if (data.category_slug) {
+                if (albumModalMore) {
+                    albumModalMore.href = '/category/' + encodeURIComponent(data.category_slug) + '/';
+                    albumModalMore.classList.remove('disabled');
+                }
+            } else {
+                if (albumModalMore) {
+                    albumModalMore.href = '#';
+                    albumModalMore.classList.add('disabled');
+                }
+            }
+
+            if (albumModal) albumModal.show();
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const section = document.getElementById('albums-tabs-section');
+        if (!section) return;
+
+        const nav = section.querySelector('#albums-tabs-nav');
+        const content = section.querySelector('#albums-tabs-content');
+        const navBtns = nav ? Array.from(nav.querySelectorAll('button.nav-link')) : [];
+        const panels = content ? Array.from(content.querySelectorAll('.tab-pane')) : [];
+
+        if (!navBtns.length || !panels.length) return;
+
+        const anyActiveBtn = navBtns.some(b => b.classList.contains('active'));
+        const anyActivePanel = panels.some(p => p.classList.contains('active') || p.classList.contains('show'));
+        if (!anyActiveBtn || !anyActivePanel) {
+            navBtns.forEach(b => b.classList.remove('active'));
+            panels.forEach(p => { p.classList.remove('active'); p.classList.remove('show'); });
+
+            navBtns[0].classList.add('active');
+            panels[0].classList.add('active');
+            panels[0].classList.add('show');
+        }
+
+        function setActive(index) {
+            index = (index + navBtns.length) % navBtns.length;
+            navBtns.forEach((b, i) => b.classList.toggle('active', i === index));
+            panels.forEach((p, i) => {
+                p.classList.toggle('active', i === index);
+                p.classList.toggle('show', i === index);
+            });
+            currentTab = index;
+        }
+
+        navBtns.forEach((btn, idx) => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                setActive(idx);
+                autoplay = false;
+                if (playPauseBtn) playPauseBtn.textContent = 'پخش';
+                clearInterval(autoplayInterval);
+            });
+        });
+
+        const prevBtn = document.getElementById('tabs-prev');
+        const nextBtn = document.getElementById('tabs-next');
+        const playPauseBtn = document.getElementById('tabs-playpause');
+
+        let currentTab = navBtns.findIndex(b => b.classList.contains('active'));
+        if (currentTab < 0) currentTab = 0;
+
+        let autoplay = false;
+        let autoplayInterval = null;
+
+        function nextTab() { setActive(currentTab + 1); }
+        function prevTab() { setActive(currentTab - 1); }
+
+        nextBtn?.addEventListener('click', function () {
+            nextTab();
+            autoplay = false;
+            if (playPauseBtn) playPauseBtn.textContent = 'پخش';
+            clearInterval(autoplayInterval);
+        });
+
+        prevBtn?.addEventListener('click', function () {
+            prevTab();
+            autoplay = false;
+            if (playPauseBtn) playPauseBtn.textContent = 'پخش';
+            clearInterval(autoplayInterval);
+        });
+
+        playPauseBtn?.addEventListener('click', function () {
+            autoplay = !autoplay;
+            playPauseBtn.textContent = autoplay ? 'توقف' : 'پخش';
+            if (autoplay) {
+                clearInterval(autoplayInterval);
+                autoplayInterval = setInterval(() => setActive(currentTab + 1), 10000);
+            } else {
+                clearInterval(autoplayInterval);
+            }
+        });
+
+        setActive(currentTab);
+    });
+</script>
+{% endblock %}

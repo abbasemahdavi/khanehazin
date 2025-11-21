@@ -1,0 +1,199 @@
+/* blog/static/css/home.css
+   نسخهٔ بازنویسی‌شده برای صفحهٔ اصلی
+   اهداف:
+   - اندازهٔ تصاویر thumbnail بین 100x100 تا 250x250
+   - کارت‌ها خوش‌نما و راست‌چین
+   - تب‌های آلبوم ظاهر منظم داشته باشند و کنترل‌های play/pause/prev/next واضح باشند
+   - دکمهٔ "بیشتر" در پایین-چپ کارت قرار بگیرد (RTL)
+   - fallback برای مودال/تب اگر JS نتواند inline CSS را اضافه کند
+*/
+
+/* ----- پایه و RTL ----- */
+:root {
+    --thumb-min: 100px;
+    --thumb-mid: 150px;
+    --thumb-max: 250px;
+    --album-card-radius: 10px;
+    --card-gap: 1rem;
+    --muted: #6c757d;
+}
+
+body, .container, .card, .albums-grid, .list-posts {
+    direction: rtl;
+    text-align: right;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+    color: #222;
+}
+
+/* ----- category panel (سمت راست در layout شما) ----- */
+.category-panel {
+    position: sticky;
+    top: 86px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+    padding: 1rem;
+}
+
+/* چک‌باکس‌ها در RTL */
+.form-check.form-check-reverse .form-check-input {
+    margin-left: 0.5rem;
+    margin-right: 0;
+}
+
+/* ----- listings / posts ----- */
+.list-posts ul { padding-left: 0; margin-bottom: 0; list-style: none; }
+.list-posts li .post-title { font-weight: 600; line-height: 1.2; margin-bottom: 0.2rem; }
+.list-posts li { min-height: 56px; }
+
+/* featured post card */
+.card.featured-post {
+    border-radius: 10px;
+    overflow: hidden;
+}
+.card.featured-post .card-img-top {
+    height: 220px;
+    object-fit: cover;
+    display:block;
+}
+.card.featured-post .card-body { padding: 1rem; }
+
+/* ----- items / cards thumbnails ----- */
+/* کارت آیتم‌ها (partial) - thumbnail اندازه قابل کنترل */
+.card .item-thumb,
+.card .card-img-top {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+    border-radius: 6px;
+}
+
+/* مقادیر پیش‌فرض محدودیت ابعاد */
+.item-thumb {
+    max-width: var(--thumb-max);
+    max-height: var(--thumb-max);
+}
+
+/* کلاس‌های اندازه که JS/تمپلیت می‌تواند اضافه کند */
+.thumbnail-small { width: var(--thumb-min) !important; height: var(--thumb-min) !important; object-fit: cover !important; }
+.thumbnail-medium { width: var(--thumb-mid) !important; height: var(--thumb-mid) !important; object-fit: cover !important; }
+.thumbnail-large { width: var(--thumb-max) !important; height: var(--thumb-max) !important; object-fit: cover !important; }
+
+/* کوچک‌نمایی واکنش‌گرا */
+@media (max-width: 576px) {
+    .item-thumb, .card .card-img-top { max-width: 100%; max-height: none; }
+}
+
+/* ----- albums grid ----- */
+/* استفاده از grid برای تطبیق در تمامی صفحه‌ها */
+.albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--card-gap);
+    align-items: start;
+}
+
+/* هر album-card */
+.album-card { display: block; }
+.album-card .card {
+    border-radius: var(--album-card-radius);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.album-card .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
+
+/* نسبت تصویر در کارت آلبوم (fallback) */
+.album-card .card .ratio, .album-card .card .card-img-top {
+    width: 100%;
+    height: 140px;
+    max-height: 220px;
+    object-fit: cover;
+    display:block;
+}
+
+/* card body */
+.album-card .card-body {
+    padding: .6rem;
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    justify-content: space-between;
+}
+.album-card .card-body h3 { margin: 0; font-size: .95rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* دکمه "بیشتر" در پایین-چپ کارت (RTL: text-start در HTML باعث می‌شود دکمه به سمت چپ محلی برود) */
+.album-card .card-body .btn {
+    padding: .25rem .45rem;
+    font-size: .8rem;
+}
+
+/* جلوگیری از رشد بیش از حد متن */
+.album-card .card-body .small { color: var(--muted); }
+
+/* ----- tabs controls styling ----- */
+#albums-tabs-section .nav-tabs { border-bottom: 1px solid #e9ecef; margin-bottom: .75rem; }
+#albums-tabs-section .nav-tabs .nav-link { border: 0; padding: .5rem .75rem; margin-inline-start: .25rem; margin-inline-end: .25rem; border-radius: 6px; }
+#albums-tabs-section .nav-tabs .nav-link.active { background: #0d6efd; color: #fff; }
+
+/* play/pause/prev/next controls */
+#albums-tabs-section .btn {
+    font-size: .9rem;
+    padding: .35rem .6rem;
+}
+#tabs-playpause {
+    min-width: 72px;
+}
+
+/* وقتی tab content فعال است، یک padding مناسب داشته باشد */
+#albums-tabs-content { padding: 1rem; background: #fff; border-radius: 0 0 8px 8px; }
+
+/* داخل tab-pane grid spacing */
+.tab-pane .albums-grid { gap: .75rem; }
+
+/* اگر تب خالی است نمایش پیام */
+.tab-pane .text-muted { padding: 1rem; }
+
+/* ----- ads column: نمایش 10 آگهی بدون اسکرول محلی ----- */
+/* برای اینکه ستون آگهی‌ها اسکرول نکند، اجازه می‌دهیم صفحه اصلی اسکرول کند.
+   اگر خواستید ستون ثابت بماند و خودش اسکرول کند، مقدار max-height و overflow-y را بازگردانید. */
+.ads-column {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    max-height: none;
+    overflow-y: visible;
+}
+
+/* کارت آگهی */
+.ad-card { border-radius: 6px; padding: .5rem; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: .6rem; text-align:center; }
+
+/* تصویر آگهی کوچک */
+.ad-card img { max-width: 100%; height: auto; display: inline-block; border-radius: 4px; }
+
+/* ----- inline spinner (AJAX) ----- */
+.ajax-spinner { display:flex; align-items:center; justify-content:center; padding: 2rem 0; }
+
+/* ----- accessibility & small tweaks ----- */
+a.nav-link, .btn { cursor: pointer; }
+.card .card-body { line-height: 1.4; }
+
+/* ----- fallback styles for album modal (if JS not applied) ----- */
+/* JS فایل albums-tabs.js تزریق استایل مودال؛ اینها فقط fallback اند */
+.album-modal-overlay { display: none; }
+.album-modal-overlay.active { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; align-items:center; justify-content:center; padding:1rem; }
+.album-modal { max-width: 1100px; width: 100%; background: #fff; border-radius: 8px; overflow: hidden; }
+
+/* responsive adjustments */
+@media (max-width: 900px) {
+    .albums-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .album-card .card .card-img-top { height: 120px; }
+    .category-panel { position: static; margin-bottom: .8rem; }
+}
+
+/* end of file */

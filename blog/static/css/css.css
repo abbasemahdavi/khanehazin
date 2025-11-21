@@ -1,0 +1,157 @@
+/*blog\static\css\css.css*/
+
+/* هدر */
+.header-box {
+    position: relative;
+    min-height: 80px;
+}
+
+/* ساعت و تقویم بالا سمت چپ */
+#jalali-clock {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem !important; /* سمت چپ */
+    font-weight: bold;
+    z-index: 20;
+    background: rgba(255,255,255,0.9);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+}
+
+
+/* فرم جستجو گوشه پایین */
+.search-bottom-left {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 5;
+}
+
+#mobile-menu {
+    display: none; /* پیش‌فرض مخفی */
+    flex-direction: column;
+    gap: 0.5rem;
+}
+#mobile-menu.show {
+    display: flex;
+}
+
+#mobile-menu-btn {
+    display: none; /* فقط موبایل نمایش داده شود */
+    z-index: 30;
+}
+
+/* موبایل */
+@media (max-width: 768px) {
+    #mobile-menu-btn {
+        display: inline-block;
+    }
+    #mobile-menu {
+        display: none; /* همیشه مخفی تا وقتی همبرگر کلیک شود */
+        width: 100%;
+    }
+    #mobile-menu.show {
+        display: flex;
+        flex-direction: column;
+    }
+    #mobile-menu ul.nav {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    #mobile-menu .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* ستون آگهی‌ها و کارت‌ها */
+.ads-column {
+    max-height: 1200px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+}
+.ad-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background: #fff;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease-in-out;
+}
+.ad-card:hover { transform: scale(1.02); }
+.ad-card img { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
+.ad-card-title { font-size: 0.9rem; padding: 0.5rem; text-align: center; }
+
+/* footer styles */
+.site-footer { background: transparent; }
+.site-footer h5 { font-weight: 600; }
+.site-footer a { color: inherit; }
+.site-footer a:hover { text-decoration: underline; }
+
+/* فضا و اندازه آیکون‌ها */
+.site-footer img { max-height: 48px; display: inline-block; }
+
+/* responsive tweaks */
+@media (max-width: 767.98px) {
+    .site-footer .text-md-start { text-align: center !important; }
+    .site-footer .text-md-end { text-align: center !important; }
+}
+
+/* ---------- post detail styles ---------- */
+
+/* عکس شاخص در سمت راست با اندازه دقیق 200x200 */
+.post-featured {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* خلاصه و عنوان سمت چپ عکس */
+.post-short-desc {
+    font-size: 0.95rem;
+    color: #444;
+    line-height: 1.5;
+}
+
+/* متن اصلی پست */
+.post-content {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: #222;
+}
+
+/* برای موبایل ستون‌ها زیر هم قرار بگیرند */
+@media (max-width: 576px) {
+    .post-featured {
+        width: 100%;
+        height: auto;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* کمی padding */
+.post-card .card-body {
+    padding: 1rem;
+}
+
+/* static/css/site.css */
+.featured-post img.card-img-top {
+    max-height: 400px;
+    object-fit: cover;
+}
+
+/* اطمینان از لحن RTL و فلو کردن صحیح */
+.post-content {
+    text-align: right;
+    direction: rtl;
+}
+

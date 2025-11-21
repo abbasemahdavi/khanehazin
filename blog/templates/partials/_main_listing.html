@@ -1,0 +1,53 @@
+{# partials/_main_listing.html
+فرض می‌شود context شامل: featured_post, other_posts, total_count
+#}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="row g-3 align-items-start">
+            {# Featured (mirrors logic in post_list.html layout) #}
+            <div class="col-12 col-lg-5 order-1 order-lg-2">
+                {% if featured_post %}
+                <article class="card featured-post h-100 position-relative text-end">
+                    {% if featured_post.image_url %}
+                    <img src="{{ featured_post.image_url }}" class="card-img-top" alt="{{ featured_post.title }}" loading="lazy">
+                    {% else %}
+                    <img src="{% static 'images/placeholder-800x450.png' %}" class="card-img-top" alt="{{ featured_post.title }}" loading="lazy">
+                    {% endif %}
+                    <div class="card-body">
+                        <h2 class="h5 card-title mb-2">
+                            <a href="{{ featured_post.get_absolute_url }}" class="text-decoration-none">{{ featured_post.title }}</a>
+                        </h2>
+                        <p class="card-text small text-muted mb-2">{{ featured_post.created_at|date:"Y/m/d H:i" }}</p>
+                        <p class="card-text">
+                            {{ featured_post.get_short_description|default:featured_post.content|truncatechars:200 }}
+                        </p>
+                        <a href="{{ featured_post.get_absolute_url }}" class="btn btn-sm btn-primary mt-2">ادامه مطلب</a>
+                    </div>
+                </article>
+                {% endif %}
+            </div>
+
+            {# other posts list #}
+            <div class="col-12 col-lg-7 order-2 order-lg-1">
+                <div class="list-posts">
+                    {% if other_posts %}
+                    <ul class="list-unstyled mb-0">
+                        {% for p in other_posts %}
+                        <li class="d-flex align-items-start py-2 border-bottom position-relative">
+                            <div class="flex-grow-1 text-end">
+                                <a href="{{ p.get_absolute_url }}" class="stretched-link title-link" aria-label="{{ p.title }}"></a>
+                                <h3 class="h6 mb-0 post-title">{{ p.title }}</h3>
+                                <div class="small text-muted mt-1">{{ p.created_at|date:"Y/m/d H:i" }}</div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">پستی برای نمایش وجود ندارد.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

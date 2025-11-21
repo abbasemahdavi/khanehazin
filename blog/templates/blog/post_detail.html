@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ post.title }} — خانه‌آذین{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="{{ post.get_short_description|default:post.title }}">
+<style>
+    /* تصویر شاخص پست */
+    .post-detail .post-thumb {
+        max-width:250px; max-height:250px;
+        width:200px; height:200px;
+        object-fit:cover; border-radius:6px;
+    }
+
+    /* تصاویر داخل متن پست */
+    .post-detail .post-content img {
+        max-width:100%;
+        height:auto;
+        margin: .6rem;
+    }
+
+    /* کلاس‌های تراز تصویر (پشتیبانی از CKEditor image2) */
+    .post-detail .post-content img.image-align-left {
+        float: left;
+        margin: 0 1rem 1rem 0;
+    }
+    .post-detail .post-content img.image-align-right {
+        float: right;
+        margin: 0 0 1rem 1rem;
+    }
+    .post-detail .post-content img.image-align-center {
+        display: block;
+        margin: 0 auto 1rem auto;
+        float: none;
+    }
+
+    /* راست‌چین بودن متن */
+    .post-detail { direction: rtl; text-align: right; }
+
+    /* modal image caption */
+    .album-modal .caption { padding: .6rem; font-size: .95rem; color:#333; }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="card mb-4 post-detail">
+    <div class="card-body">
+        <div class="d-flex align-items-start gap-3 flex-wrap">
+            <!-- تصویر پست -->
+            <div class="flex-shrink-0">
+                {% if post.image_url %}
+                <img src="{{ post.image_url }}" alt="{{ post.title }}" class="post-thumb" loading="lazy">
+                {% else %}
+                <img src="{% static 'images/placeholder-200x200.png' %}" alt="{{ post.title }}" class="post-thumb" loading="lazy">
+                {% endif %}
+            </div>
+
+            <div class="post-meta flex-grow-1">
+                <h1 class="h4 mb-1">{{ post.title }}</h1>
+                <p class="text-muted small mb-1">
+                    {{ post.created_at|date:"Y/m/d H:i" }}
+                    {% if post.author %} — {{ post.author.get_full_name|default:post.author.username }}{% endif %}
+                </p>
+                <p class="mb-0 post-summary small text-muted">
+                    {{ post.summary|default:post.content|striptags|truncatechars:200 }}
+                </p>
+            </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="post-content">
+            {{ post.content|safe }}
+        </div>
+
+        <div class="mt-3 d-flex gap-2 flex-wrap">
+            {% if request.user.is_authenticated %}
+            {% if request.user.is_staff or request.user == post.author %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ post.get_code_only_url }}">لینک با کد</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ post.get_absolute_url }}">لینک canonical</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'blog:post_edit' pk=post.pk %}">ویرایش</a>
+            <a class="btn btn-sm btn-outline-danger" href="{% url 'blog:post_delete' pk=post.pk %}">حذف</a>
+            {% else %}
+            <a class="btn btn-sm btn-secondary" href="{% url 'blog:post_list' %}">بازگشت به لیست</a>
+            {% endif %}
+            {% else %}
+            <a class="btn btn-sm btn-secondary" href="{% url 'blog:post_list' %}">بازگشت به لیست</a>
+            {% endif %}
+        </div>
+    </div>
+</article>
+
+{% if post.categories.all %}
+<div class="mb-4">
+    <strong class="small text-muted">دسته‌ها:</strong>
+    {% for c in post.categories.all %}
+    <a href="{{ c.get_absolute_url }}" class="badge bg-light text-decoration-none me-1">{{ c.name }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if ads_by_group.main %}
+<div class="main-banner-ads my-4 text-center">
+    {% for ad in ads_by_group.main %}
+    {% if ad.image %}
+    <a href="{{ ad.link_url|default:'#' }}" target="_blank" rel="noopener">
+        <img src="{{ ad.image.url }}" alt="{{ ad.name }}"
+             style="width:80%; height:100px; object-fit:cover;" class="img-fluid rounded shadow-sm" loading="lazy">
+    </a>
+    {% elif ad.external_code %}
+    {{ ad.external_code|safe }}
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

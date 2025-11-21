@@ -1,0 +1,203 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-08 18:16+0330\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Persian <LL@li.org>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\blog\models.py:20
+msgid "نام دسته‌بندی"
+msgstr "نام دسته‌بندی"
+
+#: .\blog\models.py:21 .\blog\models.py:44 .\blog\models.py:127
+msgid "نامک (slug)"
+msgstr "نامک (برای URL)"
+
+#: .\blog\models.py:22
+msgid "توضیحات"
+msgstr "توضیحات"
+
+#: .\blog\models.py:23
+msgid "عنوان سئو"
+msgstr "عنوان برای سئو"
+
+#: .\blog\models.py:24
+msgid "توضیحات سئو"
+msgstr "توضیحات سئو"
+
+#: .\blog\models.py:27
+msgid "دسته‌بندی"
+msgstr "دسته‌بندی"
+
+#: .\blog\models.py:28
+msgid "دسته‌بندی‌ها"
+msgstr "دسته‌بندی‌ها"
+
+#: .\blog\models.py:43 .\blog\models.py:96
+msgid "عنوان"
+msgstr "عنوان"
+
+#: .\blog\models.py:45
+msgid "متن"
+msgstr "متن"
+
+#: .\blog\models.py:46
+msgid "خلاصه"
+msgstr "خلاصه"
+
+#: .\blog\models.py:46
+msgid "خلاصهٔ نمایش در کارت‌ها (حدود 200 کاراکتر)"
+msgstr "چکیده (حدود 200 کاراکتر)"
+
+#: .\blog\models.py:47 .\blog\models.py:129
+msgid "عکس شاخص"
+msgstr "عکس شاخص"
+
+#: .\blog\models.py:49
+msgid "به‌روز رسانی"
+msgstr "به‌روزرسانی"
+
+#: .\blog\models.py:50 .\blog\models.py:130
+msgid "تاریخ ایجاد"
+msgstr "تاریخ ایجاد"
+
+#: .\blog\models.py:52
+msgid "نویسنده"
+msgstr "نویسنده"
+
+#: .\blog\models.py:55 .\blog\models.py:132
+msgid "دسته‌ها"
+msgstr "دسته‌ها"
+
+#: .\blog\models.py:60
+msgid "پست"
+msgstr "پست"
+
+#: .\blog\models.py:61
+msgid "پست‌ها"
+msgstr "پست‌ها"
+
+#: .\blog\models.py:81
+msgid "نام منو"
+msgstr "نام فهرست"
+
+#: .\blog\models.py:81
+msgid "مثلاً 'main' یا 'footer'"
+msgstr "مثلاً 'main' یا 'footer'"
+
+#: .\blog\models.py:82
+msgid "نامک منو"
+msgstr "نامک فهرست"
+
+#: .\blog\models.py:83
+msgid "فعال"
+msgstr "فعال"
+
+#: .\blog\models.py:86 .\blog\models.py:94
+msgid "منو"
+msgstr "فهرست"
+
+#: .\blog\models.py:87
+msgid "منوها"
+msgstr "فهرست‌ها"
+
+#: .\blog\models.py:95
+msgid "والد"
+msgstr "والد"
+
+#: .\blog\models.py:97
+msgid "آدرس (URL)"
+msgstr "نشانی (URL)"
+
+#: .\blog\models.py:97
+msgid "آدرس کامل یا relative"
+msgstr "نشانی کامل یا relative"
+
+#: .\blog\models.py:98
+msgid "نام route"
+msgstr "نام مسیر (route)"
+
+#: .\blog\models.py:98
+msgid "نام مسیر Django (مثال: blog:post_list)"
+msgstr "نام مسیر Django (مثال: blog:post_list)"
+
+#: .\blog\models.py:99
+msgid "پارامترهای مسیر"
+msgstr "پارامترهای مسیر"
+
+#: .\blog\models.py:99
+msgid "پارامترها جدا شده با کاما برای named_url"
+msgstr "پارامترها (جدا شده با کاما) برای named_url"
+
+#: .\blog\models.py:100 .\blog\models.py:156
+msgid "ترتیب"
+msgstr "ترتیب"
+
+#: .\blog\models.py:101
+msgid "نمایش"
+msgstr "نمایش"
+
+#: .\blog\models.py:104
+msgid "آیتم منو"
+msgstr "گزینهٔ فهرست"
+
+#: .\blog\models.py:105
+msgid "آیتم‌های منو"
+msgstr "گزینه‌های فهرست"
+
+#: .\blog\models.py:126
+msgid "عنوان آلبوم"
+msgstr "عنوان محصول"
+
+#: .\blog\models.py:128
+msgid "کد آلبوم"
+msgstr "کد محصول"
+
+#: .\blog\models.py:128
+msgid "کد داخلی یا شناسه آلبوم"
+msgstr "کد داخلی یا شناسهٔ محصول"
+
+#: .\blog\models.py:135
+msgid "توضیحات سفارش"
+msgstr "توضیحات سفارش"
+
+#: .\blog\models.py:135
+msgid "متنی که مشتری هنگام درخواست سفارش می‌تواند وارد کند."
+msgstr "لطفاً سفارش خود را در این قسمت وارد کنید:"
+
+#: .\blog\models.py:138 .\blog\models.py:153
+msgid "آلبوم"
+msgstr "کار"
+
+#: .\blog\models.py:139
+msgid "آلبوم‌ها"
+msgstr "کارها"
+
+#: .\blog\models.py:154
+msgid "تصویر"
+msgstr "تصویر"
+
+#: .\blog\models.py:155
+msgid "عنوان تصویر"
+msgstr "عنوان تصویر"
+
+#: .\blog\models.py:159
+msgid "تصویر آلبوم"
+msgstr "تصویر کار"
+
+#: .\blog\models.py:160
+msgid "تصاویر آلبوم"
+msgstr "تصاویر کار"

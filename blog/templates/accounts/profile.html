@@ -1,0 +1,8 @@
+<img src="{{ profile.avatar.url }}" alt="تصویر پروفایل" width="150" height="150">
+
+<h2>پروفایل کاربر</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">ذخیره تغییرات</button>
+</form>

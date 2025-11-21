@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}داشبورد من{% endblock %}
+
+{% block content %}
+<h2>پست‌های من</h2>
+<ul>
+    {% for post in user_posts %}
+    <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a> - {{ post.created_at|date:"Y/m/d" }}</li>
+    {% empty %}
+    <li>پستی ثبت نکرده‌اید.</li>
+    {% endfor %}
+</ul>
+
+<h2>آلبوم‌های من</h2>
+<ul>
+    {% for album in user_albums %}
+    <li>{{ album.title }} - {{ album.created_at|date:"Y/m/d" }}</li>
+    {% empty %}
+    <li>آلبومی ثبت نکرده‌اید.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

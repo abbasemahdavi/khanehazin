@@ -1,0 +1,69 @@
+<!--blog\templates\home.html-->
+{% extends "base.html" %}
+{% load static %}
+{% block title %}خانه‌آذین — صفحهٔ اصلی{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}?v=2">
+<meta name="description" content="صفحهٔ اصلی خانه‌آذین — فهرست دسته‌بندی‌ها و جدیدترین محتواها">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+{% endblock %}
+
+{% block right_sidebar %}
+<!-- پنل دسته‌بندی (دو ستون سمت راست در گرید) -->
+<div class="category-panel p-3">
+    <h5 class="mb-2">فهرست دسته‌بندی‌ها</h5>
+
+    <form id="categories-form" class="small" aria-label="فهرست دسته بندی‌ها">
+        <div id="categories-list" class="d-grid gap-2">
+            {% comment %} در context باید یک لیست categories بفرستی: [{'id':1,'name':'...', 'slug':'...','count':12}, ...] {% endcomment %}
+            {% for cat in categories %}
+            <div class="form-check form-check-reverse">
+                <input class="form-check-input category-checkbox" type="checkbox"
+                       value="{{ cat.slug }}" id="cat-{{ cat.id }}" checked>
+                <label class="form-check-label" for="cat-{{ cat.id }}">
+                    {{ cat.name }} <span class="badge bg-secondary ms-2">{{ cat.count }}</span>
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+            <button type="button" id="clear-filters" class="btn btn-sm btn-outline-secondary flex-grow-1">ریست فیلترها</button>
+            <button type="button" id="apply-filters" class="btn btn-sm btn-primary">اعمال</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block content %}
+<main aria-labelledby="page-title">
+    <h1 id="page-title" class="h4 mb-3">محتواها</h1>
+
+    <!-- کنترل بالا: نتیجه و وضعیت -->
+    <div id="listing-controls" class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <span id="result-count" aria-live="polite">{{ total_count }}</span> نتیجه
+        </div>
+        <div class="small text-muted">برای فیلتر کردن از سمت راست استفاده کنید.</div>
+    </div>
+
+    <!-- محل نمایش آیتم‌ها -->
+    <section id="items-list" class="row g-3" aria-live="polite">
+        {% include "partials/_items_list.html" with items=items %}
+    </section>
+
+    <!-- صفحه‌بندی (سرور-ساید هم کار می‌کند؛ AJAX صفحه‌بندی را هم جایگزین می‌کند) -->
+    <nav id="pagination" aria-label="نتایج صفحه">
+        {% include "partials/pagination.html" %}
+    </nav>
+
+    <noscript class="alert alert-warning mt-3">
+        برای استفاده از فیلترهای پویا، جاوااسکریپت را فعال کنید — در غیر این صورت نتایج به‌صورت پیش‌فرض سرور-ساید نشان داده می‌شوند.
+    </noscript>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/home.js' %}?v=3" defer></script>
+{% endblock %}

@@ -1,0 +1,312 @@
+/* blog/static/css/blog.css
+   نسخهٔ اصلاح‌شده
+   اهداف:
+   - confinement: اجبار به confinement (محدودسازی) برای stretched-link / overlay buttons
+   - thumbnails: اندازه بین 100x100 و 250x250 با کلاس‌های کمکی
+   - جلوگیری از بزرگ شدن تصاویر داخل تب/کارت
+   - RTL و دسترس‌پذیری
+   - fallback برای modalهای آلبوم
+*/
+
+/* ---------- پایه RTL ---------- */
+body, .card, .post-detail, .albums-grid, .album-card, .list-posts, .category-panel {
+    direction: rtl;
+    text-align: right;
+}
+
+/* ---------- FIX: confinement برای stretched links / absolute overlays ----------
+   مشکل اصلی: اگر والد position:relative نداشته باشد، عنصر absolute/overlay می‌تواند
+   نسبت به صفحه قرار گرفته و تمام کلیک‌ها را ربوده کند.
+   این بلوک تضمین می‌کند که کارت‌ها و آیتم‌های لیست دارای position:relative هستند.
+*/
+.card,
+article,
+.album-card,
+.list-posts li,
+.featured-post,
+.banner-ad,
+.category-panel {
+    position: relative; /* کلیدِ اصلی: confinement برای بچه‌های absolute */
+    z-index: 0;         /* والد در لایهٔ پایه قرار می‌گیرد */
+}
+
+/* اگر خواستی محدوده را تنگ‌تر کنی، فقط .album-card .card و .list-posts li را باقی بگذار */
+
+/* اگر overlay button یا stretched-link بصورت inline style با inset:0 استفاده شده،
+   این قوانین تضمین می‌کنند که درون کارت بمانند و تمامی صفحه را نپوشانند. */
+.album-open,
+.stretched-link,
+.card > a.stretched-link {
+    position: absolute;      /* معمولاً Bootstrap این را اعمال می‌کند */
+    inset: 0;                /* full-area داخل والد */
+    display: block;
+    z-index: 2;              /* بالاتر از محتوای والد تا کلیک کار کند */
+    background: transparent;
+    border: 0;
+    text-decoration: none;
+    pointer-events: auto;    /* اجازهٔ کلیک */
+}
+
+/* در صورتی که موردی وجود داشت که تمام صفحه را می‌پوشاند و علتش overlay است،
+   این rule امکان debug: اگر overlay والدِش بزرگ‌تر از 95% viewport بود، آن را غیر فعال می‌کنیم */
+.album-open[data-debug-full="1"],
+.stretched-link[data-debug-full="1"] {
+    pointer-events: none !important;
+}
+
+/* ---------- Thumbnails (قوانین اندازه و کلاس‌های کمکی) ---------- */
+.item-thumb,
+.album-cover,
+.post-thumb,
+.inline-thumb {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 6px;
+}
+
+/* محدودیت ابعاد برای نمایش در کارت‌ها */
+.item-thumb { max-width: 250px; max-height: 250px; margin-inline-start: auto; margin-inline-end: auto; }
+
+/* اندازه‌های کمکی */
+.thumbnail-small  { width: 100px !important; height: 100px !important; object-fit: cover !important; }
+.thumbnail-medium { width: 150px !important; height: 150px !important; object-fit: cover !important; }
+.thumbnail-large  { width: 250px !important; height: 250px !important; object-fit: cover !important; }
+
+/* تصویر شاخص پست */
+.post-thumb {
+    width: 200px;
+    height: 200px;
+    max-width: 250px;
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* واکنش‌گرایی برای موبایل */
+@media (max-width: 576px) {
+    .post-thumb { width: 100%; height: auto; max-height: none; margin-bottom: .5rem; }
+}
+
+/* ---------- کارت‌ها و آلبوم‌ها ---------- */
+.album-card .card {
+    overflow: hidden;
+    border-radius: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* دوباره تأکید: confinement درون کارت */
+}
+
+.album-card .card .card-img-top,
+.album-cover {
+    width: 100%;
+    height: 160px;
+    max-height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+/* متن کارت محدود و با ellipsis */
+.album-card .card-body .h6,
+.card .card-body .card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* grid آلبوم */
+.albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+
+/* دکمهٔ بیشتر در پایین-چپ کارت (RTL) */
+.album-card .card-body .btn {
+    margin-inline-start: 0;
+}
+
+/* جلوگیری از محتوای طولانی */
+.album-card .card-body p,
+.album-card .card-body h3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ---------- جلوگیری از بزرگ شدن تصاویر داخل متن ----------
+   اگر ادیتور تصویری خیلی بزرگ قرار دهد، این قواعد آن را محدود می‌کنند.
+*/
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: .6rem auto;
+    border-radius: 6px;
+    box-shadow: none;
+}
+
+/* جلوگیری از کشیده شدن تصویر تب روی کل فضا */
+.tab-pane .card-img-top,
+.tab-pane img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 250px;
+}
+
+/* ---------- Ads column: نمایش 10 آگهی بدون اسکرول داخلی ----------
+   خواسته: هر 10 آگهی در ستون نمایش داده شود؛ از اسکرول داخلی جلوگیری می‌کنیم
+   تا خود صفحه اسکرول کند نه ستون.
+*/
+.ads-column {
+    background-color: #f8f9fa;
+    border-radius: .5rem;
+    padding: .75rem;
+    border: 1px solid #dee2e6;
+    max-height: none;
+    overflow-y: visible;
+}
+
+/* کارت آگهی کوچک */
+.ad-card {
+    border: 1px solid #dee2e6;
+    border-radius: .5rem;
+    background: #fff;
+    margin-bottom: .75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    padding: .5rem;
+}
+
+/* ---------- Modal fallback styles ---------- */
+.album-modal-overlay,
+.album-modal {
+    display: none;
+}
+.album-modal-overlay.active,
+.album-modal-overlay[aria-hidden="false"] {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 1055;
+}
+.album-modal {
+    background: #fff;
+    border-radius: 8px;
+    max-width: 1100px;
+    width: 96%;
+    max-height: 95vh;
+    overflow: auto;
+}
+
+/* modal content */
+.album-modal .caption {
+    padding: .6rem;
+    font-size: .95rem;
+    color: #333;
+}
+
+.albums-tab-more {
+    display: flex;
+    justify-content: flex-start; /* تلاش برای قرارگیری در سمت چپ */
+    direction: ltr;              /* به طور صریح کانتکس این ردیف را LTR می‌کنیم تا 'بیشتر' سمت چپ قرار گیرد */
+}
+
+/* ---------- Accessibility & small tweaks ---------- */
+.card .card-body,
+.post-content,
+.list-posts,
+.albums-grid,
+.album-card,
+.category-panel {
+    direction: rtl;
+    text-align: right;
+}
+
+/* نوت: برای خوانایی متن دکمه‌ها و لینک‌ها در RTL، ممکن است خواسته باشید direction لایهٔ متن را LTR نگه دارید */
+a, .btn {
+    direction: ltr;
+}
+
+/* center images inside paragraphs (SEO-friendly alt usage preserved) */
+.post-content p img {
+    display: block;
+    margin: .6rem auto;
+}
+
+/* === Force RTL / right-align for posts list & featured === */
+.list-posts, .list-posts .post-title, .featured-post, .featured-post .card-body,
+.post-meta, .post-content, .card.featured-post, .card .card-body {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* اگر جایی کلاس دیگری باعث left شدن شد، override کن */
+.list-posts li .flex-grow-1 { text-align: right !important; }
+
+/* دکمهٔ 'بیشتر' در پایین-سمت-چپ تب (تصحیح جهت برای این ناحیه) */
+.albums-tab-more {
+    display: flex;
+    justify-content: flex-start; /* سمت چپ */
+    direction: ltr;
+    margin-left: 0.25rem;
+}
+
+/* جلوگیری از نمایش عناصر overlay سراسر صفحه */
+.stretched-link { position: absolute; inset: 0; }
+
+/* card confinement */
+.card.position-relative { overflow: hidden; }
+
+/* اطمینان از اندازه‌ی thumbnail برای تب‌ها و کارت‌ها */
+.album-cover { max-height: 220px; object-fit: cover; width: 100%; height: 100%; }
+
+/* small tweak: make the album-card thumbnails not overflow */
+.tab-pane .card-img-top, .tab-pane img { max-width: 100%; height: auto; object-fit: cover; max-height: 250px; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 768px) {
+    .albums-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .album-card .card .card-img-top { height: 130px; }
+}
+
+/* ---------- Debug helper (موقتی، برای تست) ----------
+   اگر پس از اعمال این فایل هنوز مشکل پابرجاست، این کلاس را در بدنه اضافه کنید تا overlayها بصورت رنگی نشان داده شوند.
+   این rule را پس از رفع مشکل حذف کنید.
+*/
+.debug-overlay-highlight .album-open,
+.debug-overlay-highlight .stretched-link {
+    outline: 2px dashed rgba(255,0,0,0.7);
+    background: rgba(255,0,0,0.03);
+}
+
+/* اجازه می‌دهد عنوان آلبوم چند خطی شود و بریده نشود */
+.album-card .card-body .album-title {
+    white-space: normal;      /* مهم: اجازهٔ شکست خط */
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;   /* می‌شکند اگر کلمه خیلی طولانی باشد */
+    display: block;
+    line-height: 1.2;
+    max-height: 3.6em;        /* اگر خواستی محدود به 3 خط باشه (3 * 1.2 = 3.6em) */
+}
+
+/* اطمینان از اینکه body کارت با ارتفاع کارت تطبیق دارد و دکمه پایین می‌ماند */
+.album-card .card {
+    display: flex;
+    flex-direction: column;
+}
+.album-card .card .ratio {
+    flex: 0 0 auto;   /* تصویر فضای خود را می‌گیرد */
+}
+.album-card .card-body {
+    flex: 1 1 auto;    /* card-body فضای باقیمانده را می‌گیرد */
+}
